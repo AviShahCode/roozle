@@ -1,0 +1,7 @@
+[workspace]
+resolver = "2"
+members = [
+    "roozle_core", # The core Rust library ⚙️
+    "roozle_ffi",  # The C-compatible FFI wrapper 🔗
+    "roozle_cli",  # The command-line binary 🖥️
+]
