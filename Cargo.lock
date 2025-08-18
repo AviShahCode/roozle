@@ -135,19 +135,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "roozle_cli"
-version = "0.1.0"
-dependencies = [
- "clap",
-]
-
-[[package]]
-name = "roozle_core"
+name = "roozle"
 version = "0.1.0"
 
 [[package]]
 name = "roozle_ffi"
 version = "0.1.0"
+
+[[package]]
+name = "rz"
+version = "0.1.0"
+dependencies = [
+ "clap",
+]
 
 [[package]]
 name = "strsim"
