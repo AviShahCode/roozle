@@ -1,3 +1,5 @@
-pub mod analysis;
+mod analysis;
+mod report;
 
-pub mod report;
+pub use analysis::*;
+pub use report::*;

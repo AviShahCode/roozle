@@ -1,15 +1,24 @@
 use std::collections::HashSet;
 
+use crate::analysis::{Analysis, AnalysisOptions};
+use crate::buffer;
+
 #[derive(Debug, PartialEq, Eq, Hash)]
-enum SearchOption {
-    CaseInsensitive
+pub enum SearchOption {
+    CaseInsensitive,
+    // TODO:
     // one for counting whole line if match occurs in line
     // one for inverting such match
 }
 
+pub trait Search {
+    fn search(&self, buffer: &buffer::Buffer, analysis_options: AnalysisOptions) -> Analysis;
+    // search with options
+}
+
 #[derive(Debug, Default)]
 struct SearchOptions {
-    options: HashSet<SearchOption>
+    options: HashSet<SearchOption>,
 }
 
 impl SearchOptions {

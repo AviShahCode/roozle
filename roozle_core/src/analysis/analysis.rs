@@ -1,5 +1,6 @@
+use std::any::TypeId;
 use std::collections::{HashMap, HashSet};
-use crate::analysis::report::Report;
+
 use super::report;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
@@ -11,62 +12,69 @@ pub enum AnalysisOption {
 }
 
 #[derive(Debug, Default)]
-struct AnalysisOptions {
+pub struct AnalysisOptions {
     options: HashSet<AnalysisOption>,
 }
 
 #[derive(Debug, Default)]
 pub struct Analysis {
     analysis_options: AnalysisOptions,
-    reports: HashMap<AnalysisOption, Box<dyn report::Report>>,
+    reports: HashMap<TypeId, Box<dyn report::Report>>,
 }
 
 impl AnalysisOptions {
-    fn new() -> AnalysisOptions {
+    pub fn new() -> AnalysisOptions {
         AnalysisOptions::default()
     }
 
-    fn add_option(&mut self, option: AnalysisOption) {
+    pub fn add(&mut self, option: AnalysisOption) {
         self.options.insert(option);
     }
 
-    fn remove_option(&mut self, option: &AnalysisOption) {
+    pub fn remove(&mut self, option: &AnalysisOption) {
         self.options.remove(option);
     }
 
-    fn has_option(&self, option: &AnalysisOption) -> bool {
+    pub fn has(&self, option: &AnalysisOption) -> bool {
         self.options.contains(option)
+    }
+
+    pub fn with(mut self, option: AnalysisOption) -> Self {
+        self.add(option);
+        self
     }
 }
 
 impl Analysis {
-    fn new() -> Analysis {
+    pub fn new() -> Analysis {
         Analysis::default()
     }
 
-    fn from_analysis_options(options: AnalysisOptions) -> Analysis {
+    pub fn process(&mut self, match_: &str, index: usize) {
+        for report in self.reports.values_mut() {
+            report.process(match_, index);
+        }
+    }
+
+    pub fn from_analysis_options(options: AnalysisOptions) -> Analysis {
         let mut reports = HashMap::new();
 
         for option in &options.options {
             let report = report::from_analysis_option(option);
-            reports.insert(option, report);
+            reports.insert((&*report).type_id(), report);
         }
 
-        Analysis { analysis_options: options, reports: HashMap::new() }
-    }
-
-    fn add_analysis_option(&mut self, option: AnalysisOption) {
-        if self.analysis_options.has_option(&option) {
-            return;
+        Analysis {
+            analysis_options: options,
+            reports,
         }
-        self.analysis_options.add_option(option.clone());
-        let report = report::from_analysis_option(&option);
-        self.reports.insert(option, report);
     }
 
-    // TODO: remove, has
-
-    fn get_report(&self, option: &AnalysisOption) -> Option<&Box<dyn Report>> {
-        self.reports.get(option)
+    pub fn report<T: report::Report>(&self) -> Option<&T> {
+        let r = self.reports.get(&TypeId::of::<T>());
+        if let Some(r) = r {
+            return r.as_any().downcast_ref::<T>();
+        }
+        None
     }
 }

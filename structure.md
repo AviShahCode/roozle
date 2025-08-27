@@ -40,18 +40,24 @@ fn main() {
     let exact_search = rz::SearchExact::from_pattern("the");
  
     // search options
-    let search_options = rz::SearchOptions::with(case_insensitive = true);
+    // let search_options = rz::SearchOptions::with(SearchOption::CaseInsensitive);
+    // need to build validators - like case insensitive etc
+    // keep it as part of options itself, a Vec<Box<dyn Validator>>
+    // have a constructor
  
-    let analysis_type = rz::AnalysisOptions::new().with_unique_words().with_word_count();
+    let analysis_type = rz::AnalysisOptions::new()
+                        .with(UniqueMatchesReport);
+    analysis_type.add(MatchCountReport);
     // or
     let analysis_type = rz::AnalysisOptions::with(unique_words = true, word_count = true);
  
     // or can set default
-    let analysis: rz::Analysis = exact_search.search(buffer, analysis_type, search_flags);
+    let analysis: rz::Analysis = exact_search.search(buffer, analysis_type);
     // or (just single analysis)
-    let analysis: rz::Analysis = exact_search.search(buffer, rz::AnalysisOption::WordCount);
+    // let analysis: rz::Analysis = exact_search.search(buffer, rz::AnalysisOption::WordCount);
  
     // little bit tricky
-    let unique_words = analysis.report(rz::AnalysisOption::UniqueWords);// use enums UniqueWords, WordFrequency to get specific report
+    let unique_words: rz::UniqueMatchesReport = analysis.report();// use enums UniqueWords, WordFrequency to get specific report
+    println!("{}", unique_words.count);
 }
 ```
