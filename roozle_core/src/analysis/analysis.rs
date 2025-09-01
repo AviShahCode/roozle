@@ -50,12 +50,6 @@ impl Analysis {
         Analysis::default()
     }
 
-    pub fn process(&mut self, match_: &str, index: usize) {
-        for report in self.reports.values_mut() {
-            report.process(match_, index);
-        }
-    }
-
     pub fn from_analysis_options(options: AnalysisOptions) -> Analysis {
         let mut reports = HashMap::new();
 
@@ -67,6 +61,12 @@ impl Analysis {
         Analysis {
             analysis_options: options,
             reports,
+        }
+    }
+
+    pub fn process(&mut self, match_: &str, index: usize) {
+        for report in self.reports.values_mut() {
+            report.process(match_, index);
         }
     }
 
