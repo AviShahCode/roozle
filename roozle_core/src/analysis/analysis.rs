@@ -22,18 +22,8 @@ impl AnalysisConfig {
         self.config.insert(TypeId::of::<T>(), || T::boxed());
     }
 
-    pub fn build(&self) -> HashMap<TypeId, Box<dyn Report>> {
-        let mut reports = HashMap::new();
-        for (t, r) in &self.config {
-            let r = r();
-            reports.insert(*t, r);
-        }
-        reports
-    }
-
-    pub fn remove<T: Report>(&mut self) -> &mut Self {
+    pub fn remove<T: Report>(&mut self) {
         self.config.remove(&TypeId::of::<T>());
-        self
     }
 
     pub fn has<T: Report>(&self) -> bool {
@@ -44,6 +34,15 @@ impl AnalysisConfig {
         self.add::<T>();
         self
     }
+
+    pub fn build(&self) -> HashMap<TypeId, Box<dyn Report>> {
+        let mut reports = HashMap::new();
+        for (t, r) in &self.config {
+            let r = r();
+            reports.insert(*t, r);
+        }
+        reports
+    }
 }
 
 impl Analysis {
@@ -51,7 +50,7 @@ impl Analysis {
         Analysis::default()
     }
 
-    pub fn from_config(config: AnalysisConfig) -> Analysis {
+    pub fn from_config(config: &AnalysisConfig) -> Analysis {
         let reports = config.build();
         Analysis {
             reports,

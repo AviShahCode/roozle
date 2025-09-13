@@ -1,7 +1,8 @@
 use clap::{Parser, command, Subcommand, ValueEnum};
 use std::time::Instant;
 
-use roozle as rz;
+use roozle::{self as rz, AnalysisConfig, MatchCountReport, MatchFrequencyReport, MatchIndicesReport, UniqueMatchesReport};
+use rz::Search;
 
 #[derive(Debug, Parser)]
 #[command(version, about)]
@@ -12,7 +13,7 @@ struct Cli {
     #[command(subcommand)]
     search_type: SearchType,
 
-    #[arg(short, long, global = true, num_args=1..=4)]
+    #[arg(short, long, global = true, num_args=1..=4)]  // TODO: make required
     output: Vec<AnalysisType>,
 
     #[arg(short, long)]
@@ -48,6 +49,47 @@ enum AnalysisType {
 fn main() {
     let cli = Cli::parse();
     let start_time = Instant::now();
+
+    let file_name = cli.file;
+    let buffer = rz::Buffer::from_file(&file_name).expect("Could not open file");
+
+    let search: Box<dyn Search> = match cli.search_type {
+        SearchType::Exact { pattern } => { Box::new(rz::Exact::from_pattern(pattern)) },
+        _ => unimplemented!()
+    };
+
+    let mut config = AnalysisConfig::new();
+    for c in &cli.output {
+        match c {
+            AnalysisType::Unique => config.add::<UniqueMatchesReport>(),
+            AnalysisType::Frequency => config.add::<MatchFrequencyReport>(),
+            AnalysisType::Indices => config.add::<MatchIndicesReport>(),
+            AnalysisType::Count => config.add::<MatchCountReport>(),
+        }
+    }
+
+    let analysis = search.search(&buffer, &config);
+
+    for c in &cli.output {
+        match c {
+            AnalysisType::Unique => {
+                let u = analysis.report::<UniqueMatchesReport>().unwrap();
+                println!("unique: {:?}", u.matches);
+            },
+            AnalysisType::Frequency => {
+                let f = analysis.report::<MatchFrequencyReport>().unwrap();
+                println!("frequencies: {:?}", f.frequencies);
+            },
+            AnalysisType::Indices => {
+                let i = analysis.report::<MatchIndicesReport>().unwrap();
+                println!("indices: {:?}", i.indices);
+            },
+            AnalysisType::Count => {
+                let c = analysis.report::<MatchCountReport>().unwrap();
+                println!("count: {:?}", c.count);
+            },
+        }
+    }
 
     if cli.verbose {
         println!("time (total): {:?}", start_time.elapsed());

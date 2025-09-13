@@ -15,7 +15,7 @@ impl Exact {
 }
 
 impl Search for Exact {
-    fn search(&self, buffer: &Buffer, analysis_config: AnalysisConfig) -> Analysis {
+    fn search(&self, buffer: &Buffer, analysis_config: &AnalysisConfig) -> Analysis {
         let mut analysis = Analysis::from_config(analysis_config);
         for (index, match_) in buffer.match_indices(&self.pattern) {
             analysis.process(match_, index);

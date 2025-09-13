@@ -12,7 +12,7 @@ pub enum SearchOption {
 }
 
 pub trait Search {
-    fn search(&self, buffer: &buffer::Buffer, analysis_config: AnalysisConfig) -> Analysis;
+    fn search(&self, buffer: &buffer::Buffer, analysis_config: &AnalysisConfig) -> Analysis;
     // search with options
 }
 
