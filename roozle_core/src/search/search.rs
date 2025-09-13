@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::analysis::{Analysis, AnalysisOptions};
+use crate::analysis::{Analysis, AnalysisConfig};
 use crate::buffer;
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -12,7 +12,7 @@ pub enum SearchOption {
 }
 
 pub trait Search {
-    fn search(&self, buffer: &buffer::Buffer, analysis_options: AnalysisOptions) -> Analysis;
+    fn search(&self, buffer: &buffer::Buffer, analysis_config: AnalysisConfig) -> Analysis;
     // search with options
 }
 

@@ -1,5 +1,5 @@
 use super::search::{Search};
-use crate::analysis::{Analysis, AnalysisOptions};
+use crate::analysis::{Analysis, AnalysisConfig};
 use crate::buffer::Buffer;
 
 #[derive(Debug)]
@@ -15,8 +15,8 @@ impl Exact {
 }
 
 impl Search for Exact {
-    fn search(&self, buffer: &Buffer, analysis_options: AnalysisOptions) -> Analysis {
-        let mut analysis = Analysis::from_analysis_options(analysis_options);
+    fn search(&self, buffer: &Buffer, analysis_config: AnalysisConfig) -> Analysis {
+        let mut analysis = Analysis::from_config(analysis_config);
         for (index, match_) in buffer.match_indices(&self.pattern) {
             analysis.process(match_, index);
         }

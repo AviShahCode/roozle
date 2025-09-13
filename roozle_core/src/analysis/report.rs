@@ -2,22 +2,29 @@ use std::any::Any;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 
-use super::analysis::AnalysisOption;
+// TODO
+// #[derive(Debug, PartialEq, Eq, Hash, Clone)]
+// pub enum Index {
+//     // index of match
+//     ByteIndex(usize),
+//     // index of line start, index of match
+//     LinedIndex(usize, usize),
+// }
 
 pub trait Report: Debug + Any {
     fn process(&mut self, match_: &str, index: usize);
     fn as_any(&self) -> &dyn Any;
+    fn boxed() -> Box<dyn Report> where Self: Sized;
 }
 
 #[derive(Debug, Default)]
 pub struct UniqueMatchesReport {
-    matches: HashSet<String>,
-    unique_matches: usize,
+    pub matches: HashSet<String>,
 }
 
 #[derive(Debug, Default)]
 pub struct MatchFrequencyReport {
-    frequency: HashMap<String, usize>,
+    pub frequencies: HashMap<String, usize>,
 }
 
 #[derive(Debug, Default)]
@@ -62,23 +69,29 @@ impl MatchCountReport {
 impl Report for UniqueMatchesReport {
     fn process(&mut self, match_: &str, index: usize) {
         self.matches.insert(String::from(match_));
-
-        self.unique_matches = self.matches.len();
     }
 
     fn as_any(&self) -> &dyn Any {
         self
+    }
+
+    fn boxed() -> Box<dyn Report> {
+        Box::new(UniqueMatchesReport::new())
     }
 }
 
 impl Report for MatchFrequencyReport {
     fn process(&mut self, match_: &str, index: usize) {
-        let match_count = self.frequency.entry(String::from(match_)).or_insert(0);
+        let match_count = self.frequencies.entry(String::from(match_)).or_insert(0);
         *match_count += 1;
     }
 
     fn as_any(&self) -> &dyn Any {
         self
+    }
+
+    fn boxed() -> Box<dyn Report> {
+        Box::new(MatchFrequencyReport::new())
     }
 }
 
@@ -88,11 +101,15 @@ impl Report for MatchIndicesReport {
             .indices
             .entry(String::from(match_))
             .or_insert_with(Vec::new);
-        match_indices.push(index);
+        match_indices.push(index);  // TODO
     }
 
     fn as_any(&self) -> &dyn Any {
         self
+    }
+
+    fn boxed() -> Box<dyn Report> {
+        Box::new(MatchIndicesReport::new())
     }
 }
 
@@ -104,13 +121,8 @@ impl Report for MatchCountReport {
     fn as_any(&self) -> &dyn Any {
         self
     }
-}
 
-pub fn from_analysis_option(option: &AnalysisOption) -> Box<dyn Report> {
-    match option {
-        AnalysisOption::UniqueMatches => Box::new(UniqueMatchesReport::new()),
-        AnalysisOption::MatchFrequency => Box::new(MatchFrequencyReport::new()),
-        AnalysisOption::MatchIndices => Box::new(MatchIndicesReport::new()),
-        AnalysisOption::MatchCount => Box::new(MatchCountReport::new()),
+    fn boxed() -> Box<dyn Report> {
+        Box::new(MatchCountReport::new())
     }
 }

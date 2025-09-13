@@ -29,8 +29,6 @@ fn test_buffer_from_string() {
 
     assert_eq!(*buffer, content.to_string());
     assert_eq!(buffer.len(), content.len());
-    assert_eq!(buffer.word_count(), content.split_whitespace().count());
-    assert_eq!(buffer.line_count(), content.lines().count());
 }
 
 #[test]

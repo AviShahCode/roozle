@@ -4,23 +4,26 @@ use std::ops::Deref;
 #[derive(Debug)]
 pub struct Buffer {
     content: String,
+    line_starts: Option<Vec<usize>>,
 }
 
 impl Buffer {
     pub fn new() -> Self {
         Buffer {
             content: String::new(),
+            line_starts: None,
         }
     }
 
     pub fn from_file(file_name: &str) -> Result<Self, std::io::Error> {
         let content = fs::read_to_string(file_name)?;
-        Ok(Buffer { content })
+        Ok(Buffer { content, line_starts: None })
     }
 
     pub fn from_string(string: &str) -> Self {
         Buffer {
             content: string.to_string(),
+            line_starts: None,
         }
     }
     

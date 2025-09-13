@@ -1,13 +1,24 @@
 roozle core src
  |
  + analysis
- |  + unique words
- |  + word frequency
- |  + word indices
+ |  + `struct Analysis`
+ |  |  + `analysis_config: AnalysisConfig`
+ |  |  + `reports: HashMap<TypeId, Box<dyn Report>>`
+ |  + `struct AnalysisConfig`
+ + report
+ |  + `trait Report`
+ |  |  + `fn process`
+ |  + `struct UniqueMatchesReport`
+ |  |  + `matches: HashSet<String>`
+ |  |  + `unique_matches: usize`
+ |  + `struct MatchFrequencyReport`
+ |  + `struct MatchIndicesReport`
+ |  + `struct MatchCountReport`
  + buffer
- |  + file
- |  + manual add
+ |  + `struct Buffer`
  + search
+ |  + `trait Search`
+ |  |  + `fn search`
  |  + exact
  |  + regex
  |  + fuzzy
