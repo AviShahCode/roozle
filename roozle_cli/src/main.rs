@@ -17,6 +17,9 @@ struct Cli {
     output: Vec<AnalysisType>,
 
     #[arg(short, long)]
+    threads: Option<usize>,
+
+    #[arg(short, long)]
     verbose: bool,
 }
 
@@ -68,30 +71,44 @@ fn main() {
         }
     }
 
-    let analysis = search.search(&buffer, &config);
+    let search_start_time = Instant::now();
+    let analysis;
+    if let Some(t) = cli.threads {
+        rz::set_thread_count(t);
+        analysis = search.search_mt(&buffer, &config);
+    } else {
+        analysis = search.search(&buffer, &config);
+    }
+    let search_end_time = Instant::now();
 
     for c in &cli.output {
         match c {
             AnalysisType::Unique => {
-                let u = analysis.report::<UniqueMatchesReport>().unwrap();
+                let u = analysis
+                    .report::<UniqueMatchesReport>().unwrap();
                 println!("unique: {:?}", u.matches);
             },
             AnalysisType::Frequency => {
-                let f = analysis.report::<MatchFrequencyReport>().unwrap();
+                let f = analysis
+                    .report::<MatchFrequencyReport>().unwrap();
                 println!("frequencies: {:?}", f.frequencies);
             },
             AnalysisType::Indices => {
-                let i = analysis.report::<MatchIndicesReport>().unwrap();
+                let i = analysis
+                    .report::<MatchIndicesReport>().unwrap();
                 println!("indices: {:?}", i.indices);
             },
             AnalysisType::Count => {
-                let c = analysis.report::<MatchCountReport>().unwrap();
+                let c = analysis
+                    .report::<MatchCountReport>().unwrap();
                 println!("count: {:?}", c.count);
             },
         }
     }
 
     if cli.verbose {
-        println!("time (total): {:?}", start_time.elapsed());
+        println!("\nverbose:");
+        println!("\ttime (total): {:?}", start_time.elapsed());
+        println!("\ttime (search): {:?}", search_end_time.duration_since(search_start_time));
     }
 }

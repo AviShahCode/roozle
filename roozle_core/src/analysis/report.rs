@@ -13,8 +13,10 @@ use std::fmt::Debug;
 
 pub trait Report: Debug + Any {
     fn process(&mut self, match_: &str, index: usize);
+    fn merge(&mut self, other: Box<dyn Report>);  // remove ref
     fn as_any(&self) -> &dyn Any;
-    fn boxed() -> Box<dyn Report> where Self: Sized;
+    fn into_any(self: Box<Self>) -> Box <dyn Any>;
+    fn boxed() -> Box<dyn Report + Send + Sync> where Self: Sized;
 }
 
 #[derive(Debug, Default)]
@@ -71,11 +73,23 @@ impl Report for UniqueMatchesReport {
         self.matches.insert(String::from(match_));
     }
 
+    fn merge(&mut self, other: Box<dyn Report>) {
+        let other = other
+            .into_any()
+            .downcast::<UniqueMatchesReport>()
+            .expect("Type mismatch in merge");
+        self.matches.extend(other.matches.into_iter());
+    }
+
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn boxed() -> Box<dyn Report> {
+    fn into_any(self: Box<Self>) -> Box<dyn Any> {
+        self
+    }
+
+    fn boxed() -> Box<dyn Report + Send + Sync> {
         Box::new(UniqueMatchesReport::new())
     }
 }
@@ -86,11 +100,25 @@ impl Report for MatchFrequencyReport {
         *match_count += 1;
     }
 
+    fn merge(&mut self, other: Box<dyn Report>) {
+        let other = other
+            .into_any()
+            .downcast::<MatchFrequencyReport>()
+            .expect("Type mismatch in merge");
+        for (k, v) in other.frequencies.into_iter() {
+            *self.frequencies.entry(k).or_insert(0) += v;
+        }
+    }
+
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn boxed() -> Box<dyn Report> {
+    fn into_any(self: Box<Self>) -> Box<dyn Any> {
+        self
+    }
+
+    fn boxed() -> Box<dyn Report + Send + Sync> {
         Box::new(MatchFrequencyReport::new())
     }
 }
@@ -104,11 +132,19 @@ impl Report for MatchIndicesReport {
         match_indices.push(index);  // TODO
     }
 
+    fn merge(&mut self, other: Box<dyn Report>) {
+        todo!("have to be sorted, use merge of merge sort for O(n)")
+    }
+
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn boxed() -> Box<dyn Report> {
+    fn into_any(self: Box<Self>) -> Box<dyn Any> {
+        self
+    }
+
+    fn boxed() -> Box<dyn Report + Send + Sync> {
         Box::new(MatchIndicesReport::new())
     }
 }
@@ -118,11 +154,23 @@ impl Report for MatchCountReport {
         self.count += 1;
     }
 
+    fn merge(&mut self, other: Box<dyn Report>) {
+        let other = other
+            .into_any()
+            .downcast::<MatchCountReport>()
+            .expect("Type mismatch in merge");
+        self.count += other.count;
+    }
+
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn boxed() -> Box<dyn Report> {
+    fn into_any(self: Box<Self>) -> Box<dyn Any> {
+        self
+    }
+
+    fn boxed() -> Box<dyn Report + Send + Sync> {
         Box::new(MatchCountReport::new())
     }
 }

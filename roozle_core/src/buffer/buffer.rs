@@ -7,6 +7,7 @@ pub struct Buffer {
     // line_starts: Option<Vec<usize>>,
 }
 
+// TODO: HashMap<word, count>; preprocessed, word related scan
 impl Buffer {
     pub fn new() -> Self {
         Buffer {
@@ -33,6 +34,10 @@ impl Buffer {
     pub fn push_line(&mut self, string: &str) {
         self.content.push_str(string);
         self.content.push_str("\n");
+    }
+
+    pub fn slice(&self, start: usize, end: usize) -> &str {
+        &self.content[start..end]
     }
 
     pub fn word_count(&self) -> usize {

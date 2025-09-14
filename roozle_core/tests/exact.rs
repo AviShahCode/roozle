@@ -14,7 +14,7 @@ fn test_basic_exact() {
         .with::<rz::MatchFrequencyReport>();
     config.add::<rz::MatchCountReport>();
 
-    let analysis = exact.search(&buffer, config);
+    let analysis = exact.search(&buffer, &config);
 
     let mc_report = analysis.report::<rz::MatchCountReport>();
     let mf_report = analysis.report::<rz::MatchFrequencyReport>();

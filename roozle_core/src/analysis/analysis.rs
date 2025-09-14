@@ -5,12 +5,12 @@ use super::report::Report;
 
 #[derive(Debug, Default)]
 pub struct AnalysisConfig {
-    config: HashMap<TypeId, fn() -> Box<dyn Report>>,
+    config: HashMap<TypeId, fn() -> Box<dyn Report + Send + Sync>>,
 }
 
 #[derive(Debug, Default)]
 pub struct Analysis {
-    reports: HashMap<TypeId, Box<dyn Report>>,
+    reports: HashMap<TypeId, Box<dyn Report + Send + Sync>>,
 }
 
 impl AnalysisConfig {
@@ -35,7 +35,7 @@ impl AnalysisConfig {
         self
     }
 
-    pub fn build(&self) -> HashMap<TypeId, Box<dyn Report>> {
+    pub fn build(&self) -> HashMap<TypeId, Box<dyn Report + Send + Sync>> {
         let mut reports = HashMap::new();
         for (t, r) in &self.config {
             let r = r();
@@ -69,5 +69,15 @@ impl Analysis {
             return r.as_any().downcast_ref::<T>();
         }
         None
+    }
+
+    pub fn merge(&mut self, mut other: Analysis) { // pub only to internal
+        for (type_id, other_report) in other.reports.drain() {
+            if let Some(self_report) = self.reports.get_mut(&type_id) {
+                self_report.merge(other_report);
+            } else {
+                panic!("cannot merge since self doesn't have report");
+            }
+        }
     }
 }
