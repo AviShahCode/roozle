@@ -1,14 +1,14 @@
-mod search;
 mod analysis;
 mod buffer;
+mod search;
 
 pub use analysis::*;
 pub use buffer::*;
 pub use search::*;
 
-use std::sync::OnceLock;
-use rayon::{ThreadPool, ThreadPoolBuilder};
 use num_cpus;
+use rayon::{ThreadPool, ThreadPoolBuilder};
+use std::sync::OnceLock;
 
 pub static THREAD_COUNT: OnceLock<usize> = OnceLock::new();
 static POOL: OnceLock<ThreadPool> = OnceLock::new();
@@ -29,7 +29,7 @@ pub fn get_thread_count() -> Option<&'static usize> {
 fn get_pool() -> &'static ThreadPool {
     POOL.get_or_init(|| {
         let n = THREAD_COUNT.get_or_init(num_cpus::get);
-        
+
         ThreadPoolBuilder::new()
             .num_threads(*n)
             .build()

@@ -6,7 +6,8 @@ use roozle as rz;
 #[test]
 fn test_buffer_from_file() {
     let file_path = "/tmp/roozle_test.txt";
-    let content = "Roozle is a fast string searching library.\nIt is currently in development mode.\n";
+    let content =
+        "Roozle is a fast string searching library.\nIt is currently in development mode.\n";
 
     let mut file = fs::File::create(file_path).unwrap();
     file.write_all(content.as_bytes()).unwrap();
@@ -23,7 +24,8 @@ fn test_buffer_from_file() {
 
 #[test]
 fn test_buffer_from_string() {
-    let content = "Roozle is a fast string searching library.\nIt is currently in development mode.\n";
+    let content =
+        "Roozle is a fast string searching library.\nIt is currently in development mode.\n";
 
     let buffer = rz::Buffer::from_string(content);
 

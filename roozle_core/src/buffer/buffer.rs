@@ -21,12 +21,20 @@ impl Buffer {
         Ok(Buffer { content })
     }
 
+    pub fn from_file_unchecked(file_name: &str) -> Result<Self, std::io::Error> {
+        let bytes = fs::read(file_name)?;
+        let content = unsafe { str::from_utf8_unchecked(&bytes) };
+        Ok(Buffer {
+            content: content.to_string(),
+        })
+    }
+
     pub fn from_string(string: &str) -> Self {
         Buffer {
             content: string.to_string(),
         }
     }
-    
+
     pub fn push_string(&mut self, string: &str) {
         self.content.push_str(string);
     }

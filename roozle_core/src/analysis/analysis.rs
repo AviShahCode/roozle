@@ -52,9 +52,7 @@ impl Analysis {
 
     pub fn from_config(config: &AnalysisConfig) -> Analysis {
         let reports = config.build();
-        Analysis {
-            reports,
-        }
+        Analysis { reports }
     }
 
     pub fn process(&mut self, match_: &str, index: usize) {
@@ -71,7 +69,8 @@ impl Analysis {
         None
     }
 
-    pub fn merge(&mut self, mut other: Analysis) { // pub only to internal
+    pub fn merge(&mut self, mut other: Analysis) {
+        // pub only to internal
         for (type_id, other_report) in other.reports.drain() {
             if let Some(self_report) = self.reports.get_mut(&type_id) {
                 self_report.merge(other_report);

@@ -13,10 +13,12 @@ use std::fmt::Debug;
 
 pub trait Report: Debug + Any {
     fn process(&mut self, match_: &str, index: usize);
-    fn merge(&mut self, other: Box<dyn Report>);  // remove ref
+    fn merge(&mut self, other: Box<dyn Report>); // remove ref
     fn as_any(&self) -> &dyn Any;
-    fn into_any(self: Box<Self>) -> Box <dyn Any>;
-    fn boxed() -> Box<dyn Report + Send + Sync> where Self: Sized;
+    fn into_any(self: Box<Self>) -> Box<dyn Any>;
+    fn boxed() -> Box<dyn Report + Send + Sync>
+    where
+        Self: Sized;
 }
 
 #[derive(Debug, Default)]
@@ -129,7 +131,7 @@ impl Report for MatchIndicesReport {
             .indices
             .entry(String::from(match_))
             .or_insert_with(Vec::new);
-        match_indices.push(index);  // TODO
+        match_indices.push(index); // TODO
     }
 
     fn merge(&mut self, other: Box<dyn Report>) {

@@ -6,4 +6,8 @@ description = "CLI for roozle."
 
 [dependencies]
 clap = { version = "4.5.45", features = ["derive"] }
+dhat = "0.3.3"
 roozle = { path = "../roozle_core" }
+
+[features]
+dhat-heap = []

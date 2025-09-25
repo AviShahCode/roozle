@@ -1,26 +1,29 @@
-use clap::{Parser, command, Subcommand, ValueEnum};
+use clap::*;
 use std::time::Instant;
 
-use roozle::{self as rz, AnalysisConfig, MatchCountReport, MatchFrequencyReport, MatchIndicesReport, UniqueMatchesReport};
-use rz::Search;
+use roozle as rz;
+use rz::*;
 
 #[derive(Debug, Parser)]
 #[command(version, about)]
 struct Cli {
+    #[arg(short, long)]
+    verbose: bool,
+
+    #[arg(long)]
+    unchecked: bool,
+
     /// File to perform search on
     file: String,
 
     #[command(subcommand)]
     search_type: SearchType,
 
-    #[arg(short, long, global = true, num_args=1..=4)]  // TODO: make required
+    #[arg(short, long, global = true, num_args=1..=4)] // TODO: make required
     output: Vec<AnalysisType>,
 
     #[arg(short, long)]
     threads: Option<usize>,
-
-    #[arg(short, long)]
-    verbose: bool,
 }
 
 #[derive(Debug, Clone, Subcommand)]
@@ -33,8 +36,8 @@ enum SearchType {
     /// Regex search
     Regex {
         /// Pattern for regex search
-        pattern: String
-    }
+        pattern: String,
+    },
 }
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -49,16 +52,28 @@ enum AnalysisType {
     Count,
 }
 
+#[cfg(feature = "dhat-heap")]
+#[global_allocator]
+static ALLOC: dhat::Alloc = dhat::Alloc;
+
 fn main() {
+    #[cfg(feature = "dhat-heap")]
+    let _profiler = dhat::Profiler::new_heap();
+
     let cli = Cli::parse();
     let start_time = Instant::now();
 
     let file_name = cli.file;
-    let buffer = rz::Buffer::from_file(&file_name).expect("Could not open file");
+    let buffer;
+    if cli.unchecked {
+        buffer = rz::Buffer::from_file_unchecked(&file_name).expect("Could not open file");
+    } else {
+        buffer = rz::Buffer::from_file(&file_name).expect("Could not open file");
+    }
 
     let search: Box<dyn Search> = match cli.search_type {
-        SearchType::Exact { pattern } => { Box::new(rz::Exact::from_pattern(pattern)) },
-        _ => unimplemented!()
+        SearchType::Exact { pattern } => Box::new(rz::Exact::from_pattern(pattern)),
+        _ => unimplemented!(),
     };
 
     let mut config = AnalysisConfig::new();
@@ -84,31 +99,30 @@ fn main() {
     for c in &cli.output {
         match c {
             AnalysisType::Unique => {
-                let u = analysis
-                    .report::<UniqueMatchesReport>().unwrap();
+                let u = analysis.report::<UniqueMatchesReport>().unwrap();
                 println!("unique: {:?}", u.matches);
-            },
+            }
             AnalysisType::Frequency => {
-                let f = analysis
-                    .report::<MatchFrequencyReport>().unwrap();
+                let f = analysis.report::<MatchFrequencyReport>().unwrap();
                 println!("frequencies: {:?}", f.frequencies);
-            },
+            }
             AnalysisType::Indices => {
-                let i = analysis
-                    .report::<MatchIndicesReport>().unwrap();
+                let i = analysis.report::<MatchIndicesReport>().unwrap();
                 println!("indices: {:?}", i.indices);
-            },
+            }
             AnalysisType::Count => {
-                let c = analysis
-                    .report::<MatchCountReport>().unwrap();
+                let c = analysis.report::<MatchCountReport>().unwrap();
                 println!("count: {:?}", c.count);
-            },
+            }
         }
     }
 
     if cli.verbose {
         println!("\nverbose:");
         println!("\ttime (total): {:?}", start_time.elapsed());
-        println!("\ttime (search): {:?}", search_end_time.duration_since(search_start_time));
+        println!(
+            "\ttime (search): {:?}",
+            search_end_time.duration_since(search_start_time)
+        );
     }
 }

@@ -1,6 +1,6 @@
-mod search;
 mod exact;
+mod search;
 // mod validator;
 
-pub use search::Search;
 pub use exact::Exact;
+pub use search::Search;
